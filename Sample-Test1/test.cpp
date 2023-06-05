@@ -5,7 +5,59 @@
 #include "../Project1/DeviceDriver.cpp"
 
 using namespace testing;
+using namespace std;
 
-TEST(TestCaseName, TestName) {
-    EXPECT_THAT(1, Eq(1));
+class FlashMemoryMock : public FlashMemoryInterface
+{
+public:
+    MOCK_METHOD(unsigned char, read, (long), (override));
+    MOCK_METHOD((void), write, (long, unsigned char), (override));
+};
+
+TEST(FlashMemoryMockTest, InterfaceTest) {
+    FlashMemoryMock flash_mock;
+    EXPECT_CALL(flash_mock, read)
+        .WillRepeatedly(Return(10));
+
+    //Read
+    DeviceDriver driver(&flash_mock);
+    unsigned char actual = driver.read((long)0x10);
+    cout << actual << endl;
+    EXPECT_THAT(actual, Eq(10));
+
+    //Write
+    EXPECT_CALL(flash_mock, write)
+        .Times(2);
+
+    driver.write(0x10, 2);
+    driver.write(0x10, 3);
+}
+
+TEST(FlashMemoryMockTest, NotContantReadValues) {
+    FlashMemoryMock flash_mock;
+    EXPECT_CALL(flash_mock, read)
+        .Times(5)
+        .WillOnce(Return(10))
+        .WillOnce(Return(10))
+        .WillOnce(Return(10))
+        .WillOnce(Return(10))
+        .WillOnce(Return(8));
+
+    DeviceDriver driver(&flash_mock);
+    EXPECT_THROW(driver.read(0x10), std::exception);
+}
+
+TEST(FlashMemoryMockTest, ContantReadValues) {
+    FlashMemoryMock flash_mock;
+    EXPECT_CALL(flash_mock, read)
+        .Times(5)
+        .WillOnce(Return(100))
+        .WillOnce(Return(100))
+        .WillOnce(Return(100))
+        .WillOnce(Return(100))
+        .WillOnce(Return(100));
+
+    DeviceDriver driver(&flash_mock);
+    int actual = driver.read(0x10);
+    EXPECT_THAT(actual, Eq(100));
 }
