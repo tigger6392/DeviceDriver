@@ -24,13 +24,6 @@ TEST(FlashMemoryMockTest, InterfaceTest) {
     unsigned char actual = driver.read((long)0x10);
     cout << actual << endl;
     EXPECT_THAT(actual, Eq(10));
-
-    //Write
-    EXPECT_CALL(flash_mock, write)
-        .Times(2);
-
-    driver.write(0x10, 2);
-    driver.write(0x10, 3);
 }
 
 TEST(FlashMemoryMockTest, NotContantReadValues) {
@@ -60,4 +53,24 @@ TEST(FlashMemoryMockTest, ContantReadValues) {
     DeviceDriver driver(&flash_mock);
     int actual = driver.read(0x10);
     EXPECT_THAT(actual, Eq(100));
+}
+
+TEST(FlashMemoryMockTest, AlreadyWritten) {
+    FlashMemoryMock flash_mock;
+    EXPECT_CALL(flash_mock, read)
+        .WillOnce(Return(0xFA));
+
+    DeviceDriver driver(&flash_mock);
+    EXPECT_THROW(driver.write(0x10, 10), std::exception);
+}
+
+
+TEST(FlashMemoryMockTest, NotWritten) {
+    FlashMemoryMock flash_mock;
+    EXPECT_CALL(flash_mock, read)
+        .WillOnce(Return(0xFF));
+    EXPECT_CALL(flash_mock, write);
+
+    DeviceDriver driver(&flash_mock);
+    driver.write(0x10, 10);
 }
