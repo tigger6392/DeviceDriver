@@ -24,6 +24,10 @@ int DeviceDriver::read(long address)
 
 void DeviceDriver::write(long address, int data)
 {
-    // TODO: implement this method
+    int readValue = (int)m_hardware->read(address);
+    if (readValue != 0xFF)
+    {
+        throw std::exception("Alread written!!");
+    }
     m_hardware->write(address, (unsigned char)data);
 }
