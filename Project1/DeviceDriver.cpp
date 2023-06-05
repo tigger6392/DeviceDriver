@@ -1,6 +1,8 @@
 #include "DeviceDriver.h"
+#include <Windows.h> //Sleep(200) -> 200ms
+#include <cstdio>
 
-DeviceDriver::DeviceDriver(FlashMemoryDevice* hardware) : m_hardware(hardware)
+DeviceDriver::DeviceDriver(FlashMemoryInterface* hardware) : m_hardware(hardware)
 {}
 
 int DeviceDriver::read(long address)
